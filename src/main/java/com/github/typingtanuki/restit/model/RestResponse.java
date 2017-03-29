@@ -8,21 +8,26 @@ import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
 
 /**
  * A wrapper on the REST response to simplify assertions
  *
  * @author Clerc Mathias
  */
-public class RestResponse {
+public final class RestResponse {
     private static ObjectMapper MAPPER = new ObjectMapper();
 
+    private final RestRequest request;
+    private final long requestTime;
     private final Response response;
-    private final Url url;
+    private final long responseTime;
 
-    public RestResponse(Response response, Url url) {
+    public RestResponse(RestRequest request, long requestTime, Response response, long responseTime) {
+        this.request = request;
+        this.requestTime = requestTime;
         this.response = response;
-        this.url = url;
+        this.responseTime = responseTime;
     }
 
     /**
@@ -32,9 +37,23 @@ public class RestResponse {
      * @throws AssertionError if the actual status did not match
      */
     public void assertStatus(int status) {
-        if (response.getStatusInfo().getStatusCode() != status) {
-            assertThat("Wrong REST response status for " + url.build(),
-                    response.getStatusInfo().getStatusCode(), is(status));
+        if (response.getStatus() != status) {
+            assertThat("Wrong REST response status for " + this,
+                    response.getStatus(), is(status));
+        }
+    }
+
+    /**
+     * Check that the reply was done within the specified amount of time
+     *
+     * @param duration the maximum expected duration
+     * @throws AssertionError if the response took too much time to come
+     */
+    public void assertWithin(long duration) {
+        long actualDuration = responseTime - requestTime;
+        if (actualDuration > duration) {
+            assertThat("REST endpoint took too long to respond for " + this,
+                    actualDuration, lessThan(duration));
         }
     }
 
@@ -50,7 +69,40 @@ public class RestResponse {
             String body = response.readEntity(String.class);
             return MAPPER.readerFor(clazz).readValue(body);
         } catch (ProcessingException | IllegalStateException | IOException e) {
-            throw new AssertionError("Could not extract body from request for " + url.build(), e);
+            throw new AssertionError("Could not extract body from request for " + this, e);
         }
+    }
+
+    /**
+     * @return The timestamp at which the request was made
+     */
+    public long getRequestTime() {
+        return requestTime;
+    }
+
+    /**
+     * @return The timestamp at which the response came
+     */
+    public long getResponseTime() {
+        return responseTime;
+    }
+
+    /**
+     * @return The request matching this response
+     */
+    public RestRequest getRequest() {
+        return request;
+    }
+
+    /**
+     * @return The jaxrs response from the server
+     */
+    public Response getResponse() {
+        return response;
+    }
+
+    @Override
+    public String toString() {
+        return "( " + request + " → " + response.getStatus() + " " + response.readEntity(String.class) + " )";
     }
 }

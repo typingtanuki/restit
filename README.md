@@ -51,7 +51,11 @@ Once you have a URL, you can start using it to connect to the server:
 ```java
 Url testUrl = new Url("/some/path");
 RestIt rest = new RestIt("http://my.server:4567");
-RestResponse response = rest.GET(testUrl);
+RestResponse response = rest.rest(
+        new RestRequest(
+                HttpMethod.GET,
+                testUrl
+        ));
 ```
 
 If there is any problem connecting to the server, an AssertionError will be raised with a clear message.
@@ -62,13 +66,31 @@ Otherwise the response object will be ready for use.
 Checking for status is a very common operation when testing REST calls. And it is very easy to do:
 
 ```java
-RestResponse response = rest.GET(testUrl);
+RestResponse response = rest.rest(
+        new RestRequest(
+                HttpMethod.GET,
+                testUrl
+        ));
 response.assertStatus(200);
 ```
 
 If the status was 200 nothing will happen, if it was not an AssertionError will be raised with a clear message.
 
-### Getting the actual response
+### Checking response time
+
+It is very easy to check if the response came within a specified amount of milliseconds:
+```java
+RestResponse response = rest.rest(
+        new RestRequest(
+                HttpMethod.GET,
+                testUrl
+        ));
+response.assertWithin(10_000);
+```
+
+If the response took less than 10 seconds to be received nothing will happen, if it was not an AssertionError will be raised with a clear message.
+
+### Getting the actual response entity
 
 To check for the actual response, it is also very easy:
 
@@ -79,41 +101,15 @@ MyObject entity = response.getEntity(MyObject.class);
 
 If the entity returned by the server could not be deserialized properly as a "MyObject" instance, an assertionError will be raised with a clear message.
 
-### Sample
+### Getting the full response
 
-A simple unit test in jUnit
+If you need to check for headers, coockies, ... you can retrieve the full jaxrs response like this:
 
 ```java
-private final RestIt rest = new RestIt("http://my.server:4567");
-private RestIt url;
-
-@Before
-public void setup(){
-    url = new Url("/some/path");
-    url.addQueryParameter("field", 123);
-}
-
-@Test
-public void smallIntegerWorks(){
-    url.addQueryParameter("toTest", 12);
-    RestResponse response = rest.GET(testUrl);
-    response.assertStatus(200);
-}
-
-@Test
-public void bigIntegerFails(){
-    url.addQueryParameter("toTest", 23456);
-    RestResponse response = rest.GET(testUrl);
-    response.assertStatus(400);
-}
-
-@Test
-public void stringFails(){
-    url.addQueryParameter("toTest", "string");
-    RestResponse response = rest.GET(testUrl);
-    response.assertStatus(400);
-}
+RestResponse response = rest.GET(testUrl);
+Reponse jaxrsResponse = response.getResponse();
 ```
+
 ## License
 
 Released under [MIT](LICENSE). Copyright (c) Clerc Mathias

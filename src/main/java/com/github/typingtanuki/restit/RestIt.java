@@ -1,8 +1,10 @@
 package com.github.typingtanuki.restit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.typingtanuki.restit.model.RestRequest;
 import com.github.typingtanuki.restit.model.RestResponse;
 import com.github.typingtanuki.restit.model.Url;
+import com.github.typingtanuki.restit.model.internal.RestResponseBuilder;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
@@ -11,6 +13,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 /**
@@ -34,107 +37,46 @@ public class RestIt {
         this.serverUrl = serverUrl;
     }
 
-    /**
-     * Do a GET on the specified relative URL, any failure will raise an assertion error
-     *
-     * @param url the URL to connect to (relative to the server URL)
-     * @return A response object wrapping the response
-     * @throws AssertionError for any IOException occurring during the connection
-     */
-    public RestResponse GET(Url url) {
+    public RestResponse rest(RestRequest request) {
         try {
-            return GETWithFailure(url);
-        } catch (IOException e) {
-            throw new AssertionError("Error connecting to REST API for url " + url.build(), e);
+            return unrest(request);
+        } catch (IOException | RuntimeException e) {
+            throw new AssertionError("Error connecting to REST API for: " + request, e);
         }
     }
 
-    /**
-     * Do a GET on the specified relative URL, and let any exception pass through
-     * <p>
-     * Recommended to be used only when connection problems are expected and under test
-     *
-     * @param url the URL to connect to (relative to the server URL)
-     * @return A response object wrapping the response
-     * @throws AssertionError for any IOException occurring during the connection
-     */
-    public RestResponse GETWithFailure(Url url) throws IOException {
-        WebTarget resource = resourceFor(url);
+    public RestResponse unrest(RestRequest request) throws IOException {
+        WebTarget resource = resourceFor(request.getUrl());
 
-        Invocation.Builder request = resource.request();
-        request.accept(MediaType.APPLICATION_JSON);
+        Invocation.Builder builder = resource.request();
+        builder.accept(MediaType.APPLICATION_JSON);
 
-        return new RestResponse(request.get(), url);
-    }
-
-    /**
-     * Do a POST on the specified relative URL, any failure will raise an assertion error
-     *
-     * @param url  the URL to connect to (relative to the server URL)
-     * @param body the body to send together with the request
-     * @return A response object wrapping the response
-     * @throws AssertionError for any IOException occurring during the connection
-     */
-    public RestResponse POST(Url url, Object body) {
-        try {
-            return POSTWithFailure(url, body);
-        } catch (IOException e) {
-            throw new AssertionError("Error connecting to REST API for url " + url.build(), e);
+        RestResponseBuilder responseBuilder = new RestResponseBuilder(request);
+        Response response;
+        switch (request.getMethod()) {
+            case GET:
+                response = builder.get();
+                break;
+            case POST:
+                response = builder.post(entity(request));
+                break;
+            case PUT:
+                response = builder.post(entity(request));
+                break;
+            case DELETE:
+                response = builder.delete();
+                break;
+            default:
+                throw new IOException("Unknown http method " + request.getMethod());
         }
+        return responseBuilder.build(response);
     }
 
-    /**
-     * Do a POST on the specified relative URL, and let any exception pass through
-     * <p>
-     * Recommended to be used only when connection problems are expected and under test
-     *
-     * @param url  the URL to connect to (relative to the server URL)
-     * @param body the body to send together with the request
-     * @return A response object wrapping the response
-     * @throws AssertionError for any IOException occurring during the connection
-     */
-    public RestResponse POSTWithFailure(Url url, Object body) throws IOException {
-        WebTarget resource = resourceFor(url);
-
-        Invocation.Builder request = resource.request();
-        request.accept(MediaType.APPLICATION_JSON);
-
-        Entity<Object> entity = Entity.json(MAPPER.writer().writeValueAsString(body));
-
-        return new RestResponse(request.post(entity), url);
-    }
-
-    /**
-     * Do a DELETE on the specified relative URL, any failure will raise an assertion error
-     *
-     * @param url the URL to connect to (relative to the server URL)
-     * @return A response object wrapping the response
-     * @throws AssertionError for any IOException occurring during the connection
-     */
-    public RestResponse DELETE(Url url) {
-        try {
-            return DELETEWithFailure(url);
-        } catch (IOException e) {
-            throw new AssertionError("Error connecting to REST API for url " + url.build(), e);
+    private Entity<String> entity(RestRequest request) throws IOException {
+        if (request.getEntity() == null) {
+            return Entity.json(null);
         }
-    }
-
-    /**
-     * Do a DELETE on the specified relative URL, and let any exception pass through
-     * <p>
-     * Recommended to be used only when connection problems are expected and under test
-     *
-     * @param url the URL to connect to (relative to the server URL)
-     * @return A response object wrapping the response
-     * @throws AssertionError for any IOException occurring during the connection
-     */
-    public RestResponse DELETEWithFailure(Url url) throws IOException {
-        WebTarget resource = resourceFor(url);
-
-        Invocation.Builder request = resource.request();
-        request.accept(MediaType.APPLICATION_JSON);
-
-        return new RestResponse(request.delete(), url);
+        return Entity.json(MAPPER.writer().writeValueAsString(request.getEntity()));
     }
 
     /**
@@ -154,7 +96,7 @@ public class RestIt {
      * @param url the URL to connect to
      * @return a Resteasy client
      */
-    private WebTarget resourceFor(Url url) {
+    protected WebTarget resourceFor(Url url) {
         Client client = ResteasyClientBuilder.newClient();
         WebTarget resource = client.target(serverUrl + url.build());
 
