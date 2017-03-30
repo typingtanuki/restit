@@ -1,6 +1,7 @@
 package com.github.typingtanuki.restit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.typingtanuki.restit.model.HttpMethod;
 import com.github.typingtanuki.restit.model.RestRequest;
 import com.github.typingtanuki.restit.model.RestResponse;
 import com.github.typingtanuki.restit.model.Url;
@@ -37,6 +38,127 @@ public class RestIt {
         this.serverUrl = serverUrl;
     }
 
+    /**
+     * Do a GET on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url The URL to connect to
+     * @return A wrapped response from the server
+     */
+    public RestResponse GET(Url url) {
+        return rest(new RestRequest(
+                HttpMethod.GET,
+                url
+        ));
+    }
+
+    /**
+     * Do a GET on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url The URL to connect to
+     * @return A wrapped response from the server
+     */
+    public RestResponse GET(String url) {
+        return GET(new Url(url));
+    }
+
+    /**
+     * Do a POST on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url    The URL to connect to
+     * @param entity The entity to send with the POST
+     * @return A wrapped response from the server
+     */
+    public RestResponse POST(Url url, Object entity) {
+        return rest(new RestRequest(
+                HttpMethod.POST,
+                url
+        ).withEntity(entity));
+    }
+
+    /**
+     * Do a POST on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url    The URL to connect to
+     * @param entity The entity to send with the POST
+     * @return A wrapped response from the server
+     */
+    public RestResponse POST(String url, Object entity) {
+        return POST(new Url(url), entity);
+    }
+
+    /**
+     * Do a PUT on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url    The URL to connect to
+     * @param entity The entity to send with the PUT
+     * @return A wrapped response from the server
+     */
+    public RestResponse PUT(Url url, Object entity) {
+        return rest(new RestRequest(
+                HttpMethod.PUT,
+                url
+        ).withEntity(entity));
+    }
+
+    /**
+     * Do a PUT on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url    The URL to connect to
+     * @param entity The entity to send with the PUT
+     * @return A wrapped response from the server
+     */
+    public RestResponse PUT(String url, Object entity) {
+        return PUT(new Url(url), entity);
+    }
+
+    /**
+     * Do a DELETE on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url The URL to connect to
+     * @return A wrapped response from the server
+     */
+    public RestResponse DELETE(Url url) {
+        return rest(new RestRequest(
+                HttpMethod.DELETE,
+                url
+        ));
+    }
+
+    /**
+     * Do a DELETE on the remote URL
+     * <p>
+     * (wrapper around {@link RestIt#rest})
+     *
+     * @param url The URL to connect to
+     * @return A wrapped response from the server
+     */
+    public RestResponse DELETE(String url) {
+        return DELETE(new Url(url));
+    }
+
+    /**
+     * Send the request to the remote server.
+     * <p>
+     * All IOExceptions will be transformed into AssertionError with a clear message.
+     * If the exception is wanted and expected, use {@link RestIt#unrest}.
+     *
+     * @param request the request to execute
+     * @return the response from the server, wrapped into an helper for easier assertions
+     */
     public RestResponse rest(RestRequest request) {
         try {
             return unrest(request);
@@ -45,6 +167,14 @@ public class RestIt {
         }
     }
 
+    /**
+     * Send the request to the remote server.
+     * <p>
+     * If you do not need to handle manually the exception, use {@link RestIt#rest}.
+     *
+     * @param request the request to execute
+     * @return the response from the server, wrapped into an helper for easier assertions
+     */
     public RestResponse unrest(RestRequest request) throws IOException {
         WebTarget resource = resourceFor(request.getUrl());
 
@@ -61,7 +191,7 @@ public class RestIt {
                 response = builder.post(entity(request));
                 break;
             case PUT:
-                response = builder.post(entity(request));
+                response = builder.put(entity(request));
                 break;
             case DELETE:
                 response = builder.delete();

@@ -15,7 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * @author Clerc Mathias
  */
-public class RestItTest {
+public class CoreTests {
     private final RestIt restIt = new RestItForTest("http://testServer.com");
 
     @Test

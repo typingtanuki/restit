@@ -51,11 +51,7 @@ Once you have a URL, you can start using it to connect to the server:
 ```java
 Url testUrl = new Url("/some/path");
 RestIt rest = new RestIt("http://my.server:4567");
-RestResponse response = rest.rest(
-        new RestRequest(
-                HttpMethod.GET,
-                testUrl
-        ));
+RestResponse response = rest.GET(testUrl);
 ```
 
 If there is any problem connecting to the server, an AssertionError will be raised with a clear message.
@@ -66,11 +62,7 @@ Otherwise the response object will be ready for use.
 Checking for status is a very common operation when testing REST calls. And it is very easy to do:
 
 ```java
-RestResponse response = rest.rest(
-        new RestRequest(
-                HttpMethod.GET,
-                testUrl
-        ));
+RestResponse response = rest.GET(testUrl);
 response.assertStatus(200);
 ```
 
@@ -80,11 +72,7 @@ If the status was 200 nothing will happen, if it was not an AssertionError will 
 
 It is very easy to check if the response came within a specified amount of milliseconds:
 ```java
-RestResponse response = rest.rest(
-        new RestRequest(
-                HttpMethod.GET,
-                testUrl
-        ));
+RestResponse response = rest.rest(testUrl);
 response.assertWithin(10_000);
 ```
 
