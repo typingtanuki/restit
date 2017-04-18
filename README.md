@@ -31,7 +31,7 @@ Url testUrl = new Url("/some/${placeholder}/in/path/");
 Values for each placeholder can be provided later preventing the person writing the test to have to concatenate string over and over:
 
 ```java
-testUrl.addPathParameter("placeholder", 12);
+testUrl.withPathParameter("placeholder", 12);
 ```
 
 ### URLs with query parameters
@@ -40,8 +40,8 @@ It is very easy to add query parameters without having to worry about delimiters
 
 ```java
 Url testUrl = new Url("/some/path");
-testUrl.addQueryParameter("limit", 12);
-testUrl.addQueryParameter("user", "bob");
+testUrl.withQueryParameter("limit", 12);
+testUrl.withQueryParameter("user", "bob");
 ```
 
 ### Calling an API
@@ -91,7 +91,7 @@ If the entity returned by the server could not be deserialized properly as a "My
 
 ### Getting the full response
 
-If you need to check for headers, coockies, ... you can retrieve the full jaxrs response like this:
+If you need to check for headers, cookies, ... you can retrieve the full jaxrs response like this:
 
 ```java
 RestResponse response = rest.GET(testUrl);

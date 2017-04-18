@@ -105,8 +105,6 @@ public class CoreTests {
     }
 
     private Url testUrl(int returnedStatus) {
-        Url url = new Url("/test/url");
-        url.addQueryParameter("status", returnedStatus);
-        return url;
+        return new Url("/test/url").withQueryParameter("status", returnedStatus);
     }
 }

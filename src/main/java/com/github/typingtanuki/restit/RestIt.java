@@ -9,6 +9,7 @@ import com.github.typingtanuki.restit.model.internal.RestResponseBuilder;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -183,21 +184,27 @@ public class RestIt {
 
         RestResponseBuilder responseBuilder = new RestResponseBuilder(request);
         Response response;
-        switch (request.getMethod()) {
-            case GET:
-                response = builder.get();
-                break;
-            case POST:
-                response = builder.post(entity(request));
-                break;
-            case PUT:
-                response = builder.put(entity(request));
-                break;
-            case DELETE:
-                response = builder.delete();
-                break;
-            default:
-                throw new IOException("Unknown http method " + request.getMethod());
+        try {
+            switch (request.getMethod()) {
+                case GET:
+                    response = builder.get();
+                    break;
+                case POST:
+                    response = builder.post(entity(request));
+                    break;
+                case PUT:
+                    response = builder.put(entity(request));
+                    break;
+                case DELETE:
+                    response = builder.delete();
+                    break;
+                default:
+                    throw new IOException("Unknown http method " + request.getMethod());
+            }
+        } catch (ProcessingException e) {
+            throw new IOException("Error connecting or handling response from server", e);
+        } catch (RuntimeException e) {
+            throw new IOException("Unexpected failure during the request", e);
         }
         return responseBuilder.build(response);
     }
@@ -215,9 +222,10 @@ public class RestIt {
      * @param user     the name of the user
      * @param password the password of the user
      */
-    public void basicAuth(String user, String password) {
+    public RestIt basicAuth(String user, String password) {
         this.basicUser = user;
         this.basicPassword = password;
+        return this;
     }
 
     /**

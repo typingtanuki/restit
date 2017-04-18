@@ -44,8 +44,9 @@ public class Url {
      * @param key   the key of the placeholder
      * @param value the value to be put in the url
      */
-    public void addPathParameter(String key, Object value) {
+    public Url withPathParameter(String key, Object value) {
         pathParameters.put(key, value);
+        return this;
     }
 
     /**
@@ -54,8 +55,9 @@ public class Url {
      * @param key   the name of the parameter
      * @param value the value for this parameter
      */
-    public void addQueryParameter(String key, Object value) {
+    public Url withQueryParameter(String key, Object value) {
         queryParameters.put(key, value);
+        return this;
     }
 
     /**

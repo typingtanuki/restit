@@ -3,7 +3,6 @@ package com.github.typingtanuki.restit;
 import com.github.typingtanuki.restit.mocks.RestItForTest;
 import com.github.typingtanuki.restit.mocks.TestResponse;
 import com.github.typingtanuki.restit.model.HttpMethod;
-import com.github.typingtanuki.restit.model.RestRequest;
 import com.github.typingtanuki.restit.model.RestResponse;
 import com.github.typingtanuki.restit.model.Url;
 import org.junit.Test;
@@ -59,8 +58,6 @@ public class DelegationTest {
     }
 
     private Url testUrl(int returnedStatus) {
-        Url url = new Url("/test/url");
-        url.addQueryParameter("status", returnedStatus);
-        return url;
+        return new Url("/test/url").withQueryParameter("status", returnedStatus);
     }
 }
