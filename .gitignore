@@ -4,4 +4,6 @@ gradlew.bat
 restit.*
 .gradle
 
+build
 out
+bintray.gradle
