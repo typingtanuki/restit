@@ -1,8 +1,68 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
+apply plugin: 'com.jfrog.bintray'
 apply plugin: 'java'
 apply plugin: 'idea'
 
+apply plugin: 'maven-publish'
+apply from: 'bintray.gradle'
+
 repositories {
     jcenter()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            groupId 'com.github.typingtanuki'
+            artifactId 'restit'
+            version projectVersion
+        }
+    }
+}
+
+bintray {
+    user = bintrayUser
+    key = bintrayApiKey
+    publications = ['maven']
+
+    pkg {
+        repo = 'generic'
+        name = 'restit'
+        userOrg = 'typingtanuki'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/typingtanuki/restit.git'
+
+        version{
+            name = version projectVersion
+            released = new Date()
+        }
+    }
+}
+
+task sourcesJar (type: Jar, dependsOn: classes) {
+    classifier 'sources'
+    from sourceSets.main.allJava
+}
+
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    sourcesJar
+    javadocJar
 }
 
 dependencies {

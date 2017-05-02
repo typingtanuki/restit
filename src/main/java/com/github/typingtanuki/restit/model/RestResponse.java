@@ -23,6 +23,9 @@ public final class RestResponse {
     private final Response response;
     private final long responseTime;
 
+    private final Object ENTITY_LOCK = new Object[0];
+    private String cachedEntity;
+
     public RestResponse(RestRequest request, long requestTime, Response response, long responseTime) {
         this.request = request;
         this.requestTime = requestTime;
@@ -66,10 +69,24 @@ public final class RestResponse {
      */
     public <T> T getEntity(Class<? extends T> clazz) {
         try {
-            String body = response.readEntity(String.class);
+            String body = stringEntity();
             return MAPPER.readerFor(clazz).readValue(body);
         } catch (ProcessingException | IllegalStateException | IOException e) {
             throw new AssertionError("Could not extract body from request for " + this, e);
+        }
+    }
+
+    /**
+     * The entity can only be read once
+     *
+     * @return the entity as a string
+     */
+    private String stringEntity() {
+        synchronized (ENTITY_LOCK) {
+            if (cachedEntity == null) {
+                cachedEntity = response.readEntity(String.class);
+            }
+            return cachedEntity;
         }
     }
 
@@ -103,6 +120,6 @@ public final class RestResponse {
 
     @Override
     public String toString() {
-        return "( " + request + " → " + response.getStatus() + " " + response.readEntity(String.class) + " )";
+        return "( " + request + " → " + response.getStatus() + " " + stringEntity() + " )";
     }
 }

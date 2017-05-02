@@ -20,15 +20,15 @@ public class Url {
      * <p>
      * The URL is given in a relative form. The base of the URL will be the server url given to the client.
      * <p>
-     * The URL can contain placeholders in the path like:<br/>
+     * The URL can contain placeholders in the path like:
      * <code>/path/to/${aPlaceholder}/and/${another}</code>
      * <p>
-     * Those placeholders can then be defined at runtime with:<br/>
-     * <code>addPathParameter("aPlaceholder", 12);</code><br/>
+     * Those placeholders can then be defined at runtime with:
+     * <code>addPathParameter("aPlaceholder", 12);</code>
      * <code>addPathParameter("another", "isAString");</code>
      * <p>
-     * This URL should not contain query parameters, they are to be added with:<br/>
-     * <code>addQueryParameter("param", 23);</code><br/>
+     * This URL should not contain query parameters, they are to be added with:
+     * <code>addQueryParameter("param", 23);</code>
      *
      * @param url the relative URL
      */
