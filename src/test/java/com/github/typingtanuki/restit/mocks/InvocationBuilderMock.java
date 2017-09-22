@@ -1,6 +1,5 @@
 package com.github.typingtanuki.restit.mocks;
 
-import com.github.typingtanuki.restit.model.HttpMethod;
 import com.github.typingtanuki.restit.model.Url;
 
 import javax.ws.rs.client.AsyncInvoker;
@@ -20,42 +19,43 @@ public class InvocationBuilderMock implements Invocation.Builder {
     }
 
     @Override
-    public Response get() {
-        return new ResponseMock(HttpMethod.GET, url);
-    }
-
-    @Override
-    public Response post(Entity<?> entity) {
-        return new ResponseMock(HttpMethod.POST, url, entity);
-    }
-
-    @Override
-    public Response put(Entity<?> entity) {
-        return new ResponseMock(HttpMethod.PUT, url, entity);
-    }
-
-    @Override
-    public Response delete() {
-        return new ResponseMock(HttpMethod.DELETE, url);
-    }
-
-    @Override
     public Invocation.Builder accept(String... mediaTypes) {
         return this;
     }
 
-    private IllegalStateException mockFail() {
-        return new IllegalStateException("Method not implemented in mock");
-    }
-
     @Override
     public Invocation build(String method) {
-        throw mockFail();
+        return new InvocationMock(method, url, null);
     }
 
     @Override
     public Invocation build(String method, Entity<?> entity) {
+        return new InvocationMock(method, url, entity);
+    }
+
+    @Override
+    public Response get() {
         throw mockFail();
+    }
+
+    @Override
+    public Response post(Entity<?> entity) {
+        throw mockFail();
+    }
+
+    @Override
+    public Response put(Entity<?> entity) {
+        throw mockFail();
+    }
+
+    @Override
+    public Response delete() {
+        throw mockFail();
+    }
+
+
+    protected static IllegalStateException mockFail() {
+        return new IllegalStateException("Method not implemented in mock");
     }
 
     @Override

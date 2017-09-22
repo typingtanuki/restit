@@ -185,22 +185,13 @@ public class RestIt {
         RestResponseBuilder responseBuilder = new RestResponseBuilder(request);
         Response response;
         try {
-            switch (request.getMethod()) {
-                case GET:
-                    response = builder.get();
-                    break;
-                case POST:
-                    response = builder.post(entity(request));
-                    break;
-                case PUT:
-                    response = builder.put(entity(request));
-                    break;
-                case DELETE:
-                    response = builder.delete();
-                    break;
-                default:
-                    throw new IOException("Unknown http method " + request.getMethod());
+            Invocation invocation;
+            if (request.getEntity() == null) {
+                invocation = builder.build(request.getMethod().name());
+            } else {
+                invocation = builder.build(request.getMethod().name(), entity(request));
             }
+            response = invocation.invoke();
         } catch (ProcessingException e) {
             throw new IOException("Error connecting or handling response from server", e);
         } catch (RuntimeException e) {

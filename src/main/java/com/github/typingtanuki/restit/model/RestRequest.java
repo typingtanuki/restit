@@ -43,21 +43,13 @@ public class RestRequest {
 
     /**
      * Set the entity to send with the request.
-     * <p>
-     * Only works on POST and PUT requests.
      *
      * @param entity The entity to send
      * @return this instance with the field set
-     * @throws IllegalStateException If entity is being set on an unsupported type of http method
      */
     public RestRequest withEntity(Object entity) {
-        switch (method) {
-            case POST:
-            case PUT:
-                this.entity = entity;
-                return this;
-        }
-        throw new IllegalStateException("Can only set an entity on POST and PUT requests. Current " + method);
+        this.entity = entity;
+        return this;
     }
 
     @Override
